@@ -876,3 +876,43 @@ h3 span, .left h3 { color: #6a6a6a; }
   margin: 25px 0 0 0;
   float: left;
 }
+
+
+/* Icons */
+
+
+.terminate {
+  background: url(../images/icons/terminate.png) top left no-repeat !important;
+  padding-left: 20px !important;
+}
+
+.reboot {
+  background: url(../images/icons/reboot.png) top left no-repeat !important;
+  padding-left: 20px !important;
+}
+
+.log {
+  background: url(../images/icons/logs.png) top left no-repeat !important;
+  padding-left: 20px !important;
+  display: block;
+}
+
+.vnc_console {
+  background: url(../images/icons/vnc_console.png) top left no-repeat !important;
+  padding-left: 20px !important;
+  display: block;
+}
+
+.edit {
+  background: url(../images/icons/edit.png) top left no-repeat !important;
+  padding-left: 20px !important;
+  display: block;
+}
+
+
+
+
+
+
+
+

@@ -36,9 +36,9 @@
             <ul>
               <li class="form">{% include "_terminate.html" with form=terminate_form %}</li>
               <li class="form">{% include "_reboot.html" with form=reboot_form %}</li>
-              <li><a target="_blank" href="{% url dash_instances_console request.user.tenant instance.id %}">Log</a></li>
-              <li><a target="_blank" href="{% url dash_instances_vnc request.user.tenant instance.id %}">VNC Console</a></li>
-              <li><a href="{% url dash_instances_update request.user.tenant instance.id %}">Edit</a></li>
+              <li><a class="log" title="{{instance.name}} Logs" target="_blank" href="{% url dash_instances_console request.user.tenant instance.id %}">Log</a></li>
+              <li><a class="vnc_console" target="_blank" href="{% url dash_instances_vnc request.user.tenant instance.id %}">VNC Console</a></li>
+              <li><a class="edit" href="{% url dash_instances_update request.user.tenant instance.id %}">Edit</a></li>
             </ul>
         </td>
       </tr>
