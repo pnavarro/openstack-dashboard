@@ -130,6 +130,11 @@ class Flavor(APIResourceWrapper):
     _attrs = ['disk', 'id', 'links', 'name', 'ram', 'vcpus']
 
 
+class FloatingIp(APIResourceWrapper):
+    """Simple wrapper for floating ips"""
+    _attrs = ['ip', 'fixed_ip', 'instance_id', 'id']
+
+
 class Image(APIDictWrapper):
     """Simple wrapper around glance image dictionary"""
     _attrs = ['checksum', 'container_format', 'created_at', 'deleted',
@@ -356,6 +361,90 @@ def flavor_delete(request, flavor_id, purge=False):
 
 def flavor_get(request, flavor_id):
     return Flavor(compute_api(request).flavors.get(flavor_id))
+
+
+@check_openstackx
+def tenant_floating_ip_list(request):
+    """
+    Fetches a list of all floating ips.
+    """
+    return [FloatingIp(ip) for ip in extras_api(request).floating_ips.list()]
+
+def tenant_floating_ip_get(request, floating_ip_id):
+    """
+    Fetches a floating ip.
+    """
+    return extras_api(request).floating_ips.get(floating_ip_id)
+
+
+def tenant_floating_ip_attach(request, tenant_id):
+    """
+    Allocates a floating ip to tenant.
+    """
+    return extras_api(request).floating_ips.attach()
+
+
+def tenant_floating_ip_release(request, floating_ip_id):
+    """
+    Releases floating ip from the pool of a tenant.
+    """
+    return extras_api(request).floating_ips.release(floating_ip_id)
+
+
+def tenant_floating_ip_associate(request, floating_ip_id, fixed_ip):
+    """
+    Associates a floating ip to a fixed ip.
+    """
+    return extras_api(request).floating_ips.associate(floating_ip_id, fixed_ip)
+
+
+def tenant_floating_ip_disassociate(request, floating_ip_id):
+    """
+    Removes relationship between floating and fixed ips.
+    """
+    return extras_api(request).floating_ips.disassociate(floating_ip_id)
+
+
+@check_openstackx
+def admin_floating_ip_list(request):
+    """
+    Fetches a list of all floating ips.
+    """
+    return [FloatingIp(ip) for ip in admin_api(request).floating_ips.list()]
+
+def admin_floating_ip_get(request, floating_ip_id):
+    """
+    Fetches a floating ip.
+    """
+    return admin_api(request).floating_ips.get(floating_ip_id)
+
+
+def admin_floating_ip_attach(request, tenant_id):
+    """
+    Allocates a floating ip to tenant.
+    """
+    return admin_api(request).floating_ips.attach()
+
+
+def admin_floating_ip_release(request, floating_ip_id):
+    """
+    Releases floating ip from the pool of a tenant.
+    """
+    return admin_api(request).floating_ips.release(floating_ip_id)
+
+
+def admin_floating_ip_associate(request, floating_ip_id, fixed_ip):
+    """
+    Associates a floating ip to a fixed ip.
+    """
+    return admin_api(request).floating_ips.associate(floating_ip_id, fixed_ip)
+
+
+def admin_floating_ip_disassociate(request, floating_ip_id):
+    """
+    Removes relationship between floating and fixed ips.
+    """
+    return admin_api(request).floating_ips.disassociate(floating_ip_id)
 
 
 @check_openstackx
@@ -623,9 +712,12 @@ def swift_get_object_data(request, container_name, object_name):
     return container.get_object(object_name).stream()
 
 class GlobalSummary(object):
-    summary = {}
+    node_resources = ['vcpus', 'disk_size', 'ram_size']
+    unit_mem_size = {'disk_size': ['GiB', 'TiB'], 'ram_size': ['MiB', 'GiB']}
+    node_resource_info = ['', 'active_', 'avail_']
 
     def __init__(self, request):
+        self.summary = {}
         for rsrc in GlobalSummary.node_resources:
             for info in GlobalSummary.node_resource_info:
                 self.summary['total_' + info + rsrc] = 0
@@ -634,12 +726,10 @@ class GlobalSummary(object):
         self.usage_list = []
 
     def service(self):
-        for rsrc in GlobalSummary.node_resources:
-                self.summary['total_' + rsrc] = 0
-
         try:
             self.service_list = service_list(self.request)
         except api_exceptions.ApiException, e:
+            self.service_list = []
             LOG.error('ApiException fetching service list in instance usage',
                       exc_info=True)
             messages.error(self.request,
@@ -652,11 +742,11 @@ class GlobalSummary(object):
                 self.summary['total_disk_size'] += min(service.stats['max_gigabytes'], service.stats['local_gb'])
                 self.summary['total_ram_size'] += min(service.stats['max_ram'], service.stats['memory_mb']) if 'max_ram' in service.stats else service.stats['memory_mb']
 
-
     def usage(self, datetime_start, datetime_end):
         try:
             self.usage_list = usage_list(self.request, datetime_start, datetime_end)
         except api_exceptions.ApiException, e:
+            self.usage_list = []
             LOG.error('ApiException fetching usage list in instance usage'
                       ' on date range "%s to %s"' % (datetime_start,
                                                      datetime_end),
@@ -691,8 +781,3 @@ class GlobalSummary(object):
     def avail(self):
         for rsrc in GlobalSummary.node_resources:
             self.summary['total_avail_' + rsrc] = self.summary['total_' + rsrc] - self.summary['total_active_' + rsrc]
-
-
-GlobalSummary.node_resources = ['vcpus', 'disk_size', 'ram_size']
-GlobalSummary.unit_mem_size = {'disk_size': ['GiB', 'TiB'], 'ram_size': ['MiB', 'GiB']}
-GlobalSummary.node_resource_info = ['', 'active_', 'avail_']
