@@ -527,7 +527,7 @@ def server_delete(request, instance):
 
 
 def server_get(request, instance_id):
-    return Server(compute_api(request).servers.get(instance_id), request)
+    return Server(extras_api(request).servers.get(instance_id), request)
 
 
 @check_openstackx
