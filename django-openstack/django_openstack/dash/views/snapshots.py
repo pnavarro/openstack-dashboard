@@ -19,7 +19,7 @@
 #    under the License.
 
 """
-Views for managing Nova images.
+Views for managing Nova instance snapshots.
 """
 
 import datetime
@@ -53,8 +53,10 @@ class CreateSnapshot(forms.SelfHandlingForm):
         try:
             LOG.info('Creating snapshot "%s"' % data['name'])
             snapshot = api.snapshot_create(request, data['instance_id'], data['name'])
-            messages.info(request, 'Snapshot "%s" created for instance %s' %\
-                                    (data['name'], data['instance_id']))
+            instance = api.server_get(request, data['instance_id'])
+
+            messages.info(request, 'Snapshot "%s" created for instance "%s"' %\
+                                    (data['name'], instance.name))
             return shortcuts.redirect('dash_snapshots', data['tenant_id'])
         except api_exceptions.ApiException, e:
             LOG.error("ApiException in CreateSnapshot", exc_info=True)
@@ -65,6 +67,7 @@ class CreateSnapshot(forms.SelfHandlingForm):
 @login_required
 def index(request, tenant_id):
     images = []
+
     try:
         images = api.snapshot_list_detailed(request)
     except glance_exception.ClientConnectionError, e:
@@ -73,10 +76,6 @@ def index(request, tenant_id):
     except glance_exception.Error, e:
         LOG.error("Error retrieving image list", exc_info=True)
         messages.error(request, "Error retrieving image list: %s" % str(e))
-    except api_exceptions.ApiException, e:
-        msg = "Unable to retreive image info from glance: %s" % str(e)
-        LOG.error(msg)
-        messages.error(request, msg)
 
     return render_to_response('dash_snapshots.html', {
         'images': images,
