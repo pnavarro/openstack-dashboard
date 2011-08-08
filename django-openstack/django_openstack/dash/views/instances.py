@@ -96,12 +96,10 @@ class UpdateInstance(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         tenant_id = data['tenant_id']
-        instance_id = data['instance']
-        name = data['name']
         description = data.get('description', '')
         try:
-            api.server_update(request, instance_id, name, description)
-            messages.success(request, "Instance %s updated" % instance_id)
+            api.server_update(request, data['instance'], data['name'], description)
+            messages.success(request, "Instance '%s' updated" % data['name'])
         except api_exceptions.ApiException, e:
             messages.error(request,
                        'Unable to update instance: %s' % e.message)
