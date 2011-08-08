@@ -38,6 +38,7 @@ from django.contrib import messages
 
 import cloudfiles
 import glance.client
+import glance.common.exception as glance_exceptions
 import httplib
 import json
 import logging
@@ -180,8 +181,11 @@ class Server(APIResourceWrapper):
 
     @property
     def image_name(self):
-        image = image_get(self.request, self.image['id'])
-        return image.name
+        try:
+            image = image_get(self.request, self.image['id'])
+            return image.name
+        except glance_exceptions.NotFound:
+            return "(not found)"
 
     def reboot(self, hardness=openstack.compute.servers.REBOOT_HARD):
         compute_api(self.request).servers.reboot(self.id, hardness)
@@ -807,9 +811,9 @@ class GlobalSummary(object):
 
         for service in self.service_list:
             if service.type == 'nova-compute':
-                self.summary['total_vcpus'] += min(service.stats['max_vcpus'], service.stats['vcpus'])
-                self.summary['total_disk_size'] += min(service.stats['max_gigabytes'], service.stats['local_gb'])
-                self.summary['total_ram_size'] += min(service.stats['max_ram'], service.stats['memory_mb']) if 'max_ram' in service.stats else service.stats['memory_mb']
+                self.summary['total_vcpus'] += min(service.stats['max_vcpus'], service.stats.get('vcpus', 0))
+                self.summary['total_disk_size'] += min(service.stats['max_gigabytes'], service.stats.get('local_gb', 0))
+                self.summary['total_ram_size'] += min(service.stats['max_ram'], service.stats['memory_mb']) if 'max_ram' in service.stats else service.stats.get('memory_mb', 0)
 
     def usage(self, datetime_start, datetime_end):
         try:
