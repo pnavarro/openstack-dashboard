@@ -37,6 +37,11 @@ from django.conf import settings
 from django.contrib import messages
 
 import cloudfiles
+
+# NOTE(vish): glance client requries gettext right now
+import gettext
+gettext.install('glance', unicode=1)
+
 import glance.client
 import glance.common.exception as glance_exceptions
 import httplib
