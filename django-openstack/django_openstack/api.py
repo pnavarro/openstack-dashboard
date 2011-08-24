@@ -361,7 +361,7 @@ def flavor_delete(request, flavor_id, purge=False):
 
 
 def flavor_get(request, flavor_id):
-    return Flavor(compute_api(request).flavors.get(flavor_id))
+    return Flavor(extras_api(request).flavors.get(flavor_id))
 
 
 @check_openstackx
