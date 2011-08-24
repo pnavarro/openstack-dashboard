@@ -291,7 +291,7 @@ def compute_api(request):
     compute.client.management_url = url_for(request, 'nova_compat')
     LOG.debug('compute_api connection created using token "%s"'
                       ' and url "%s"' %
-                      (request.user.token, url_for(request, 'nova')))
+                      (request.user.token, url_for(request, 'nova_compat')))
     return compute
 
 

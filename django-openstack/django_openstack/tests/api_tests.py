@@ -629,7 +629,8 @@ class AdminApiTests(test.TestCase):
 
     def test_get_admin_api(self):
         self.mox.StubOutClassWithMocks(OSAdmin, 'Admin')
-        OSAdmin.Admin(auth_token=TEST_TOKEN, management_url=TEST_URL)
+        OSAdmin.Admin(auth_token=TEST_TOKEN, management_url=TEST_URL,
+                      tenant_id='aTenant')
 
         self.mox.StubOutWithMock(api, 'url_for')
         api.url_for(IsA(http.HttpRequest), 'nova', True).AndReturn(TEST_URL)
@@ -862,9 +863,9 @@ class ComputeApiTests(test.TestCase):
 
         self.mox.StubOutWithMock(api, 'url_for')
         # called three times?  Looks like a good place for optimization
-        api.url_for(IsA(http.HttpRequest), 'nova').AndReturn(TEST_URL)
-        api.url_for(IsA(http.HttpRequest), 'nova').AndReturn(TEST_URL)
-        api.url_for(IsA(http.HttpRequest), 'nova').AndReturn(TEST_URL)
+        api.url_for(IsA(http.HttpRequest), 'nova_compat').AndReturn(TEST_URL)
+        api.url_for(IsA(http.HttpRequest), 'nova_compat').AndReturn(TEST_URL)
+        api.url_for(IsA(http.HttpRequest), 'nova_compat').AndReturn(TEST_URL)
 
         self.mox.ReplayAll()
 
@@ -944,7 +945,8 @@ class ExtrasApiTests(test.TestCase):
 
     def test_get_extras_api(self):
         self.mox.StubOutClassWithMocks(OSExtras, 'Extras')
-        OSExtras.Extras(auth_token=TEST_TOKEN, management_url=TEST_URL)
+        OSExtras.Extras(auth_token=TEST_TOKEN, management_url=TEST_URL,
+                        tenant_id='aTenant')
 
         self.mox.StubOutWithMock(api, 'url_for')
         api.url_for(IsA(http.HttpRequest), 'nova').AndReturn(TEST_URL)
