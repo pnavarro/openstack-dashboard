@@ -280,11 +280,11 @@ def check_openstackx(f):
 def compute_api(request):
     compute = openstack.compute.Compute(
         auth_token=request.user.token,
-        management_url=url_for(request, 'nova'))
+        management_url=url_for(request, 'nova_compat'))
     # this below hack is necessary to make the jacobian compute client work
     # TODO(mgius): It looks like this is unused now?
     compute.client.auth_token = request.user.token
-    compute.client.management_url = url_for(request, 'nova')
+    compute.client.management_url = url_for(request, 'nova_compat')
     LOG.debug('compute_api connection created using token "%s"'
                       ' and url "%s"' %
                       (request.user.token, url_for(request, 'nova')))
@@ -314,7 +314,8 @@ def admin_api(request):
                     ' and url "%s"' %
                     (request.user.token, url_for(request, 'nova', True)))
     return openstackx.admin.Admin(auth_token=request.user.token,
-                                 management_url=url_for(request, 'nova', True))
+                                  tenant_id=request.user.tenant,
+                                  management_url=url_for(request, 'nova', True))
 
 
 def extras_api(request):
@@ -322,7 +323,8 @@ def extras_api(request):
                      ' and url "%s"' %
                     (request.user.token, url_for(request, 'nova')))
     return openstackx.extras.Extras(auth_token=request.user.token,
-                                   management_url=url_for(request, 'nova'))
+                                    tenant_id=request.user.tenant,
+                                    management_url=url_for(request, 'nova'))
 
 
 def auth_api():
