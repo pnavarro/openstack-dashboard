@@ -4,7 +4,7 @@
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #
-# Copyright 2011 Fourth Paradigm Development, Inc.
+# Copyright 2011 CRS4
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -18,16 +18,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls.defaults import *
-from django.conf import settings
-from django_openstack.signals import *
+""" 
+Simple decorator container for general purpose
+"""
 
-urlpatterns = patterns('',
-    url(r'^auth/', include('django_openstack.auth.urls')),
-    url(r'^dash/', include('django_openstack.dash.urls')),
-    url(r'^syspanel/', include('django_openstack.syspanel.urls')),
-)
+from django.shortcuts import redirect
+import logging
 
-# import urls from modules
-for module_urls in dash_modules_urls.send(sender=dash_modules_urls):
-    urlpatterns += module_urls[1].urlpatterns
+
+LOG = logging.getLogger('django_openstack.syspanel')
+
+
+def enforce_admin_access(fn):
+    """ Preserve unauthorized bypass typing directly the URL and redirects to 
+    the overview dash page """
+    def dec(*args,**kwargs):
+        if args[0].user.is_admin():
+            return fn(*args,**kwargs)
+        else:
+            LOG.warn('Redirecting user "%s" from syspanel to dash  ( %s )' %
+                     ( args[0].user.username, fn.__name__) , exc_info=True)
+            return redirect('dash_overview')
+    return dec
