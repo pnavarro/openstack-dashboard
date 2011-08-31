@@ -17,6 +17,6 @@ xattr
 kombu
 
 bzr+https://launchpad.net/glance#egg=glance
--e git://github.com/jacobian/openstack.compute.git#egg=openstack
--e git://github.com/cloudbuilders/openstackx.git#egg=openstackx
+-e https://github.com/jacobian/openstack.compute.git#egg=openstack
+-e https://github.com/cloudbuilders/openstackx.git#egg=openstackx
 
